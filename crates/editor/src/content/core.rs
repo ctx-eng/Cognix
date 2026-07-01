@@ -607,12 +607,12 @@ impl Buffer {
                             // the existing block styling.
                             if inherit_styling
                                 && block_style
-                                    .should_inherit_style(edit_cursor, previous_block_style.clone())
+                                    .should_inherit_style(edit_cursor, &previous_block_style)
                             {
                                 push_text_fragments_to_block(
                                     &mut new_content,
                                     line,
-                                    previous_block_style.clone(),
+                                    previous_block_style,
                                 );
                             } else {
                                 end_all_active_text_styles(&mut new_content);
@@ -675,21 +675,21 @@ impl Buffer {
                                 Some(text.text),
                             );
                         }
-                        BlockType::Text(previous_block_style) => {
+                        BlockType::Text(ref previous_block_style) => {
                             if inherit_styling
                                 && block_style
-                                    .should_inherit_style(edit_cursor, previous_block_style.clone())
+                                    .should_inherit_style(edit_cursor, previous_block_style)
                             {
                                 push_text_fragments_to_block(
                                     &mut new_content,
                                     text.text,
-                                    previous_block_style,
+                                    previous_block_style.clone(),
                                 );
                             } else {
                                 maybe_push_new_block_marker(
                                     inherit_styling,
                                     edit_cursor,
-                                    previous_block_style,
+                                    previous_block_style.clone(),
                                     block_style.clone(),
                                     &mut new_content,
                                 );
@@ -714,21 +714,21 @@ impl Buffer {
                                 Some(list.text),
                             );
                         }
-                        BlockType::Text(previous_block_style) => {
+                        BlockType::Text(ref previous_block_style) => {
                             if inherit_styling
                                 && block_style
-                                    .should_inherit_style(edit_cursor, previous_block_style.clone())
+                                    .should_inherit_style(edit_cursor, previous_block_style)
                             {
                                 push_text_fragments_to_block(
                                     &mut new_content,
                                     list.text,
-                                    previous_block_style,
+                                    previous_block_style.clone(),
                                 );
                             } else {
                                 maybe_push_new_block_marker(
                                     inherit_styling,
                                     edit_cursor,
-                                    previous_block_style,
+                                    previous_block_style.clone(),
                                     block_style.clone(),
                                     &mut new_content,
                                 );
@@ -754,10 +754,10 @@ impl Buffer {
                                 Some(list.indented_text.text),
                             );
                         }
-                        BlockType::Text(previous_block_style) => {
+                        BlockType::Text(ref previous_block_style) => {
                             if inherit_styling
                                 && block_style
-                                    .should_inherit_style(edit_cursor, previous_block_style.clone())
+                                    .should_inherit_style(edit_cursor, previous_block_style)
                             {
                                 push_text_fragments_to_block(
                                     &mut new_content,
@@ -799,10 +799,10 @@ impl Buffer {
                                 Some(list.text),
                             );
                         }
-                        BlockType::Text(previous_block_style) => {
+                        BlockType::Text(ref previous_block_style) => {
                             if inherit_styling
                                 && block_style
-                                    .should_inherit_style(edit_cursor, previous_block_style.clone())
+                                    .should_inherit_style(edit_cursor, previous_block_style)
                             {
                                 push_text_fragments_to_block(
                                     &mut new_content,
@@ -1424,15 +1424,15 @@ fn insert_multiline_block(
             );
             new_content.append_str(text);
         }
-        BlockType::Text(previous_block_style) => {
+        BlockType::Text(ref previous_block_style) => {
             // For code blocks, there are a couple of situations
             // 1) If we are not inherit styling or the cursor is at buffer start, always start a new block.
             // 2) If the current block type is a code block, append the existing content to that code block.
             // 3) Else, append the content as plain text lines to the active block.
             if inherit_styling
-                && block_style.should_inherit_style(edit_cursor, previous_block_style.clone())
+                && block_style.should_inherit_style(edit_cursor, previous_block_style)
             {
-                if previous_block_style == block_style {
+                if *previous_block_style == block_style {
                     new_content.append_str(text);
                 } else {
                     let mut first = true;

@@ -35,7 +35,7 @@ echo "Running architecture validation..."
 echo "Architecture validation succeeded..."
 
 echo "Running clang-format..."
-./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./crates/warpui/src/ ./app/src/
+./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./ui/warpui/src/ ./apps/desktop/src/
 echo "clang-format succeeded..."
 
 echo "Running wgslfmt..."

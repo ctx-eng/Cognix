@@ -207,7 +207,7 @@ For straightforward tasks, skip the workflow structure:
 ```markdown
 ## Adding a Feature Flag
 
-Add the feature to `app/Cargo.toml`:
+Add the feature to `apps/desktop/Cargo.toml`:
 
 \`\`\`toml
 [features]

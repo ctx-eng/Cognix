@@ -73,9 +73,9 @@ pub enum LocalShellStateEvent {}
 /// shell/corresponding path environment variable. It's useful in
 /// executing commands locally without having to initiate a session.
 ///
-/// Its usage pattern can be seen in app/src/external_secrets/mod.rs,
+/// Its usage pattern can be seen in apps/desktop/src/external_secrets/mod.rs,
 /// where the shell_path is fetched from a caller view (in this case,
-/// fetch_secrets in app/src/env_vars/env_var_collection.rs) via a
+/// fetch_secrets in apps/desktop/src/env_vars/env_var_collection.rs) via a
 /// LocalShell handle, and is passed into the external secret manager
 /// interface. The interface then dispatches commands to execute via
 /// execute_command in this file.

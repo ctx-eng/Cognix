@@ -5134,7 +5134,7 @@ impl Input {
                 get_stable_agent_mode_hint_text(&mut self.cached_agent_mode_hint_text)
             }
             (InputType::AI, _) => {
-                // Follow the `agent_indicator` pattern (see `app/src/tab.rs`):
+                // Follow the `agent_indicator` pattern (see `apps/desktop/src/tab.rs`):
                 //  * `None` (no conversation, empty, passive, or untitled) => new conversation => "Warp anything"
                 //  * `InProgress`                                           => agent running    => "Steer"
                 //  * Any other status                                       => finished         => "Ask a follow up"

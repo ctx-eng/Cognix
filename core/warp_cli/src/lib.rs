@@ -5,8 +5,8 @@ use std::{env, fmt, path::Path};
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use url::Url;
 
-use warp_core::channel::ChannelState;
-use warp_core::features::FeatureFlag;
+use warp_core_base::channel::ChannelState;
+use warp_core_base::features::FeatureFlag;
 
 use crate::agent::OutputFormat;
 

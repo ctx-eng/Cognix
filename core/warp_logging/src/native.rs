@@ -9,11 +9,11 @@ use anyhow::Result;
 use chrono::Local;
 use log::LevelFilter;
 use std::sync::OnceLock;
-use warp_core::features::FeatureFlag;
+use warp_core_base::features::FeatureFlag;
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
 use crate::{LogConfig, LogDestination};
-use warp_core::channel::ChannelState;
+use warp_core_base::channel::ChannelState;
 
 const MAX_FILES_IN_GUI_ROTATION: usize = 5;
 const MAX_FILES_IN_CLI_ROTATION: usize = 10;
@@ -318,7 +318,7 @@ fn temp_log_file_path(log_directory: impl AsRef<Path>) -> PathBuf {
 
 #[cfg(feature = "crash_reporting")]
 fn sentry_log_filter(md: &log::Metadata) -> sentry_log::LogFilter {
-    if warp_core::errors::should_ignore_log_for_sentry(md) {
+    if warp_core_base::errors::should_ignore_log_for_sentry(md) {
         return sentry_log::LogFilter::Ignore;
     }
 
@@ -481,9 +481,9 @@ fn init_log_directory() -> Result<std::path::PathBuf> {
                 })?
                 .join("Library/Logs/"))
         } else if #[cfg(target_os = "linux")] {
-            Ok(warp_core::paths::state_dir())
+            Ok(warp_core_base::paths::state_dir())
         } else if #[cfg(windows)] {
-            Ok(warp_core::paths::state_dir().join(warp_core::paths::WARP_LOGS_DIR))
+            Ok(warp_core_base::paths::state_dir().join(warp_core_base::paths::WARP_LOGS_DIR))
         } else {
             Err(anyhow::anyhow!("Have not configured file-based logging for the current platform!"))
         }

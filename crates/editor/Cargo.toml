@@ -41,6 +41,7 @@ regex-syntax = "0.8.2"
 urlocator.workspace = true
 serde.workspace = true
 serde_yaml.workspace = true
+smol_str.workspace = true
 string-offset.workspace = true
 sum_tree.workspace = true
 thiserror.workspace = true

@@ -50,7 +50,7 @@ cargo clippy --target wasm32-unknown-unknown --profile release-wasm-debug_assert
 
 **Objective-C/C/C++ formatting:**
 ```bash
-./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./crates/warpui/src/ ./app/src/
+./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./ui/warpui/src/ ./apps/desktop/src/
 ```
 
 **All tests:**

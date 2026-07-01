@@ -73,6 +73,7 @@ warp = { path = "apps/desktop" }
 warp_cli = { path = "core/warp_cli" }
 warp_completer = { path = "core/warp_completer" }
 warp_core = { path = "core/warp_core" }
+warp_core_base = { path = "core/warp_core_base" }
 warp_editor = { path = "crates/editor" }
 warp_features = { path = "core/warp_features" }
 remote_server = { path = "core/remote_server" }
@@ -385,20 +386,34 @@ rmcp = { git = "https://github.com/warpdotdev/rmcp.git", rev = "c0f65dc441af7d71
 # better stack traces in sentry. But there is a cost of about 20% binary size
 # increase.
 [profile.release]
-debug = true
+debug = 0
 # Force the rust compiler to create a dSYM. Starting in 1.53 the default on MacOS is "unpacked".
 split-debuginfo = "packed"
+incremental = false
+codegen-units = 1
+opt-level = 3
+lto = true
+strip = true
+overflow-checks = false
 
 [profile.dev]
 # Use line-tables-only to speed up dev builds. Change to `debug = true` if you
 # need full debuginfo for step-through debugging (gdb/lldb).
-debug = "line-tables-only"
+debug = 1
+# More codegen units speeds up compilation by allowing the LLVM backend to process
+# units in parallel. Trade-off: slightly worse runtime optimization.
+codegen-units = 256
 # loads debuginfo without needing to run dsymutil, leave the .o object files
 # in the build output directory instead of deleting them, and skips the step of running dsymutil.
 # Rust's backtrace support is smart enough to know how to find these .o files.
 # This should work as long as you don't need to move the binary to a different
 # location while retaining the debug information.
 split-debuginfo = "unpacked"
+incremental = true
+opt-level = 0
+lto = false
+strip = false
+overflow-checks = true
 
 [profile.dev.package]
 # Minimize the runtime overhead of CPU profiling at the cost of a small
@@ -474,6 +489,16 @@ strip = "symbols"
 [profile.dev-wasm]
 inherits = "dev"
 opt-level = "s"
+
+[profile.ci]
+inherits = "dev"
+incremental = false
+codegen-units = 1
+opt-level = 2
+debug = 1
+lto = true
+strip = false
+overflow-checks = true
 
 [patch.crates-io]
 core-foundation = { git = "https://github.com/servo/core-foundation-rs", rev = "0bcad1e103ead6bd71c4e5f85598ada9508e3a82" }

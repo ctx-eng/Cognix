@@ -76,13 +76,13 @@ impl<'a> BufferMarkdownParser<'a> {
                     res.push('\n');
                 }
                 StyledBufferBlock::Text(text_block) => {
-                    if let BufferBlockStyle::Table { alignments, .. } = &text_block.style
+                    if let BufferBlockStyle::Table(table_style) = &text_block.style
                         && matches!(self.style, MarkdownStyle::Export { .. })
                     {
                         let markdown_text = Self::styled_runs_to_markdown_text(&text_block.block);
                         let table = super::text::table_from_internal_format_with_inline_markdown(
                             &markdown_text,
-                            alignments.clone(),
+                            table_style.alignments.clone(),
                         );
                         Self::serialize_table_to_gfm_markdown(&table, &mut res);
                         continue;
@@ -126,7 +126,7 @@ impl<'a> BufferMarkdownParser<'a> {
                                 res.push_str("- [ ] ");
                             }
                         }
-                        BufferBlockStyle::Table { .. } => {
+                        BufferBlockStyle::Table(_) => {
                             res.push_str("```");
                             res.push_str(TABLE_BLOCK_MARKDOWN_LANG);
                             res.push('\n');
@@ -149,7 +149,7 @@ impl<'a> BufferMarkdownParser<'a> {
 
                     // Push the suffix for the active block.
                     match text_block.style {
-                        BufferBlockStyle::CodeBlock { .. } | BufferBlockStyle::Table { .. } => {
+                        BufferBlockStyle::CodeBlock { .. } | BufferBlockStyle::Table(_) => {
                             res.push_str("```\n")
                         }
                         BufferBlockStyle::Header { .. }
@@ -493,12 +493,12 @@ impl<'a> BufferToFormattedText<'a> {
                                 code: text,
                             })
                         }
-                        BufferBlockStyle::Table { alignments, .. } => {
+                        BufferBlockStyle::Table(table_style) => {
                             trailing_new_line = false;
                             let text: String =
                                 text_block.block.into_iter().map(|run| run.run).collect();
                             FormattedTextLine::Table(
-                                markdown_parser::FormattedTable::from_internal_format_with_alignments(&text, alignments),
+                                markdown_parser::FormattedTable::from_internal_format_with_alignments(&text, table_style.alignments),
                             )
                         }
                         BufferBlockStyle::PlainText => {
@@ -548,7 +548,7 @@ impl BufferBlockStyle {
     fn escape_markdown_punctuation(&self) -> bool {
         !matches!(
             self,
-            BufferBlockStyle::CodeBlock { .. } | BufferBlockStyle::Table { .. }
+            BufferBlockStyle::CodeBlock { .. } | BufferBlockStyle::Table(_)
         )
     }
 }
@@ -889,12 +889,12 @@ impl Serialize for ExportedBufferBlocks<'_> {
                     }
 
                     active_indent_level = new_indent_level;
-                    if let BufferBlockStyle::Table { alignments, .. } = &text_block.style {
+                    if let BufferBlockStyle::Table(table_style) = &text_block.style {
                         let markdown_text =
                             BufferMarkdownParser::styled_runs_to_markdown_text(&text_block.block);
                         let table = super::text::table_from_internal_format_with_inline_markdown(
                             &markdown_text,
-                            alignments.clone(),
+                            table_style.alignments.clone(),
                         );
                         serialize_table_to_html(serializer, &table)?;
                         previous_block_type = Some(text_block.style.clone());
@@ -909,7 +909,7 @@ impl Serialize for ExportedBufferBlocks<'_> {
                             Some(format!("h{}", Into::<usize>::into(header_size)))
                         }
                         BufferBlockStyle::PlainText => Some("p".to_string()),
-                        BufferBlockStyle::Table { .. } => None,
+                        BufferBlockStyle::Table(_) => None,
                     };
                     let tag_name = name.map(|name| QualName::new(None, ns!(html), name.into()));
 

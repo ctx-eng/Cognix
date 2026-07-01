@@ -1,0 +1,70 @@
+name: Security & Build CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  CARGO_TERM_COLOR: always
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+
+jobs:
+  build:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Set up sccache-action
+        uses: mozilla/sccache-action@v0.0.7
+
+      - name: Enable Rust Cache (Swatinem/rust-cache)
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Check Formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build Workspace
+        run: cargo build --all-targets --all-features
+
+      - name: Run Tests (Nextest)
+        run: cargo nextest run --all-features
+
+  regression-check:
+    name: Performance Regression Check
+    runs-on: ubuntu-latest
+    needs: build
+    continue-on-error: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up sccache-action
+        uses: mozilla/sccache-action@v0.0.7
+
+      - name: Install cargo-accelerate
+        run: cargo install --path .
+
+      - name: Run Regression Check
+        run: cargo accelerate regression --compare --budget 600

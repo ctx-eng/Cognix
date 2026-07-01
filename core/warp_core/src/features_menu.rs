@@ -1,11 +1,10 @@
-pub use warp_features::*;
-
 use warpui::platform::menu::{CustomMenuItem, MenuItem, MenuItemPropertyChanges};
+use warp_core_base::features::{FeatureFlag, RUNTIME_FEATURE_FLAGS};
+
 fn feature_flag_menu_item(flag: FeatureFlag) -> MenuItem {
     MenuItem::Custom(CustomMenuItem::new(
         &format!("{flag:?}"),
         move |_| {
-            // toggling the flag
             flag.set_enabled(!flag.is_enabled())
         },
         move |_props, _ctx| MenuItemPropertyChanges {

@@ -552,7 +552,7 @@ impl BlockSpacings {
             BufferBlockStyle::TaskList { indent_level, .. } => {
                 self.task_list.to_spacing(*indent_level)
             }
-            BufferBlockStyle::PlainText | BufferBlockStyle::Table { .. } => self.text,
+            BufferBlockStyle::PlainText | BufferBlockStyle::Table(_) => self.text,
             BufferBlockStyle::CodeBlock { .. } => self.code_block,
         }
     }
@@ -3376,7 +3376,7 @@ impl RichTextStyles {
             | BufferBlockStyle::UnorderedList { .. }
             | BufferBlockStyle::OrderedList { .. }
             | BufferBlockStyle::TaskList { .. } => self.base_text,
-            BufferBlockStyle::Table { .. } => {
+            BufferBlockStyle::Table(_) => {
                 let mut style = self.base_text;
                 style.font_family = self.table_style.font_family;
                 style.font_size = self.table_style.font_size;

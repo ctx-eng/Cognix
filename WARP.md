@@ -33,7 +33,7 @@ Environment variables:
 - `./script/presubmit` - Run all presubmit checks (fmt, clippy, tests)
 - `cargo fmt` - Format code
 - `cargo clippy --workspace --all-targets --all-features --tests -- -D warnings` - Run clippy
-- `./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./crates/warpui/src/ ./app/src/` - Format C/C++/Obj-C code
+- `./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./ui/warpui/src/ ./apps/desktop/src/` - Format C/C++/Obj-C code
 - `find . -name "*.wgsl" -exec wgslfmt --check {} +` - Check WGSL shader formatting
 
 ### Platform Setup
@@ -56,7 +56,7 @@ This is a Rust-based terminal emulator with a custom UI framework called **WarpU
 - Actions system for event handling
 - MouseStateHandle must be created once during construction, and then referenced/cloned anywhere we're using mouse input to track mouse changes. Inline `MouseStateHandle::default()` while rendering will cause no mouse interactions to work.
 
-**Main App** (`app/`):
+**Main App** (`apps/desktop/`):
 - Terminal emulation and shell management (`terminal/`)
 - AI integration including Agent Mode (`ai/`)
 - Cloud synchronization and Drive features (`drive/`)
@@ -83,7 +83,7 @@ This is a Rust-based terminal emulator with a custom UI framework called **WarpU
 
 **Workspace Structure**:
 - This is a Cargo workspace with 34+ member crates
-- Main binary is in `app/`, UI framework in `ui/`
+- Main binary is in `apps/desktop/`, UI framework in `ui/`
 - Platform-specific code is conditionally compiled
 - Integration tests are in `integration/`
 
@@ -135,7 +135,7 @@ This is a Rust-based terminal emulator with a custom UI framework called **WarpU
 **Database**:
 - Uses Diesel ORM with SQLite
 - Migrations in `migrations/` directory
-- Schema defined in `app/src/persistence/schema.rs`
+- Schema defined in `apps/desktop/src/persistence/schema.rs`
 
 **GraphQL**:
 - Schema and client code generation from `graphql/api/schema.graphql`

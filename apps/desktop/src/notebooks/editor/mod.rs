@@ -322,7 +322,7 @@ impl<'a> From<&'a BufferBlockStyle> for BlockType {
             BufferBlockStyle::UnorderedList { .. } => BlockType::UnorderedList,
             BufferBlockStyle::OrderedList { .. } => BlockType::OrderedList,
             BufferBlockStyle::TaskList { .. } => BlockType::TaskList,
-            BufferBlockStyle::Table { .. } => BlockType::Text,
+            BufferBlockStyle::Table(_) => BlockType::Text,
         }
     }
 }

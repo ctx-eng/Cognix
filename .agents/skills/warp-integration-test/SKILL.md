@@ -32,11 +32,11 @@ The core pieces are:
 - `crates/integration/src/builder.rs`
   - Warp-specific wrapper around the lower-level WarpUI integration builder.
   - Sets default timeout, hermetic home directory, shell rc files, user prefs, and real-display mode when requested.
-- `crates/warpui_core/src/integration/driver.rs`
+- `ui/warpui_core/src/integration/driver.rs`
   - Executes steps, handles retries, precondition reruns, screenshots, video capture, artifact export, and `on_finish`.
-- `crates/warpui_core/src/integration/step.rs`
+- `ui/warpui_core/src/integration/step.rs`
   - Defines `TestStep`, input/event APIs, assertion polling, step-to-step data passing, and screenshot/recording hooks.
-- `app/src/integration_testing/`
+- `apps/desktop/src/integration_testing/`
   - High-level helpers and assertions for common Warp behaviors.
   - Prefer these helpers over raw low-level event plumbing whenever they fit.
 
@@ -193,7 +193,7 @@ These are good baseline invariants for most UI interactions.
 
 ### Prefer helper APIs over raw event plumbing
 
-Use high-level helpers from `app/src/integration_testing/` whenever possible:
+Use high-level helpers from `apps/desktop/src/integration_testing/` whenever possible:
 
 - terminal command execution helpers
 - block list helpers
