@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+EXPENSIVE_DEPENDENCIES = {
+    "syn",
+    "quote",
+    "proc-macro2",
+    "wasm-bindgen",
+    "tokio",
+    "reqwest",
+    "serde_json",
+    "image",
+    "openssl",
+    "git2",
+    "regex",
+    "serde_yaml",
+}
+
+LAYER_PREFIXES = [
+    ("app", 3),
+    ("apps", 3),
+    ("ui", 2),
+    ("core", 1),
+    ("crates", 0),
+]
+
+
+def cargo_metadata():
+    result = subprocess.run(
+        ["cargo", "metadata", "--format-version=1"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return json.loads(result.stdout)
+
+
+def layer_for_manifest(manifest_path):
+    parts = pathlib.Path(manifest_path).parts
+    for prefix, layer in LAYER_PREFIXES:
+        if prefix in parts:
+            return layer
+    return 0
+
+
+def analyze_workspace(metadata):
+    id_to_package = {pkg["id"]: pkg for pkg in metadata["packages"]}
+    # Restrict analysis to workspace members to avoid registry/git dependencies
+    workspace_ids = set(metadata.get("workspace_members", []))
+    package_layers = {
+        pkg_id: layer_for_manifest(id_to_package[pkg_id]["manifest_path"]) for pkg_id in workspace_ids
+    }
+    dep_graph = {pkg_id: [] for pkg_id in workspace_ids}
+    resolve = metadata.get("resolve") or {}
+    for node in resolve.get("nodes", []):
+        node_id = node.get("id")
+        if node_id not in workspace_ids:
+            continue
+        for dep in node.get("deps", []):
+            dep_id = dep.get("pkg")
+            if dep_id in workspace_ids:
+                dep_graph[node_id].append(dep_id)
+
+    violations = []
+    expensive = []
+    for pkg_id in sorted(workspace_ids):
+        pkg = id_to_package.get(pkg_id)
+        if not pkg:
+            continue
+        pkg_layer = package_layers[pkg_id]
+        for dep in dep_graph[pkg_id]:
+            dep_layer = package_layers.get(dep, 0)
+            if dep_layer > pkg_layer:
+                violations.append((pkg, id_to_package[dep], pkg_layer, dep_layer))
+
+        for dep in pkg.get("dependencies", []):
+            # Only warn about expensive deps declared by workspace packages
+            if dep.get("name") in EXPENSIVE_DEPENDENCIES and dep.get("kind") != "dev" and dep.get("kind") != "build":
+                expensive.append((pkg, dep["name"], dep.get("kind", "normal"), dep.get("req", "")))
+
+    return dep_graph, package_layers, violations, expensive
+
+
+def format_manifest_path(manifest_path, root):
+    return os.path.relpath(manifest_path, start=root)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Analyze workspace dependency layering and flag expensive dependencies."
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit with status 1 if any layering violations are found.",
+    )
+    parser.add_argument(
+        "--output-json",
+        help="Write a machine-readable JSON report to the given path.",
+    )
+    args = parser.parse_args()
+
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    os.chdir(repo_root)
+    metadata = cargo_metadata()
+    dep_graph, package_layers, violations, expensive = analyze_workspace(metadata)
+
+    # Optionally emit a JSON report for automation
+    if args.output_json:
+        out = {
+            "packages_analyzed": len(dep_graph),
+            "package_layers": {k: v for k, v in package_layers.items()},
+            "layering_violations": [
+                {
+                    "pkg": v[0]["name"],
+                    "pkg_manifest": v[0].get("manifest_path"),
+                    "dep": v[1]["name"],
+                    "dep_manifest": v[1].get("manifest_path"),
+                    "pkg_layer": v[2],
+                    "dep_layer": v[3],
+                }
+                for v in violations
+            ],
+            "expensive_deps": [
+                {
+                    "pkg": e[0]["name"],
+                    "pkg_manifest": e[0].get("manifest_path"),
+                    "dep_name": e[1],
+                    "kind": e[2],
+                    "req": e[3],
+                }
+                for e in expensive
+            ],
+        }
+        import json as _json
+
+        out_path = pathlib.Path(args.output_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(_json.dumps(out, indent=2))
+        print(f"Wrote JSON report to {out_path}")
+        return
+
+    print("Workspace dependency layering report")
+    print("-----------------------------------")
+    print(f"Packages analyzed: {len(dep_graph)}")
+    print()
+
+    if violations:
+        print("Layering violations detected:")
+        for pkg, dep, pkg_layer, dep_layer in violations:
+            print(
+                f"  - {pkg['name']} ({format_manifest_path(pkg['manifest_path'], repo_root)}) "
+                f"layer {pkg_layer} depends on {dep['name']} "
+                f"({format_manifest_path(dep['manifest_path'], repo_root)}) layer {dep_layer}"
+            )
+        print()
+    else:
+        print("No workspace layering violations detected.")
+        print()
+
+    if expensive:
+        print("Expensive dependency warnings:")
+        for pkg, dep_name, kind, req in expensive:
+            print(
+                f"  - {pkg['name']} depends on expensive crate {dep_name} "
+                f"(kind={kind}, req={req})"
+            )
+        print()
+    else:
+        print("No direct expensive dependency usage found in workspace packages.")
+        print()
+
+    if args.strict and violations:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

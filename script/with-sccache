@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+if ! command -v sccache >/dev/null 2>&1; then
+    echo "Error: sccache is not installed. Install it with 'cargo install sccache' or your OS package manager." >&2
+    exit 1
+fi
+
+export RUSTC_WRAPPER="$(command -v sccache)"
+export SCCACHE_CACHE_SIZE="${SCCACHE_CACHE_SIZE:-10G}"
+export SCCACHE_LOG="${SCCACHE_LOG:-info}"
+
+# Optional remote backend support. Configure via SCCACHE_* environment variables.
+# Example: SCCACHE_BUCKET=my-bucket SCCACHE_S3_REGION=us-east-1 ./script/with-sccache build
+if ! sccache --show-stats >/dev/null 2>&1; then
+    sccache --start-server >/dev/null 2>&1 || true
+fi
+
+echo "Using sccache wrapper: $RUSTC_WRAPPER"
+exec cargo "$@"

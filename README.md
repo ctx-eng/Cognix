@@ -57,6 +57,15 @@ To build and run Warp from source:
 ./script/presubmit   # fmt, clippy, and tests
 ```
 
+New build optimization helpers:
+
+```bash
+./script/with-sccache build --workspace --all-targets --all-features
+./script/affected-build       # build only crates affected by your current branch
+./script/cognix-buildd        # watch sources and prebuild with sccache
+./script/workspace-analyzer   # enforce layer boundaries and flag expensive deps
+```
+
 See [WARP.md](WARP.md) for the full engineering guide, including coding style, testing, and platform-specific notes.
 
 ## Joining the Team

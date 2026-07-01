@@ -2863,6 +2863,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "cognix_agent_runtime"
+version = "0.1.0"
+dependencies = [
+ "cognix_context",
+ "cognix_kernel",
+]
+
+[[package]]
+name = "cognix_context"
+version = "0.1.0"
+dependencies = [
+ "cognix_kernel",
+]
+
+[[package]]
+name = "cognix_kernel"
+version = "0.1.0"
+
+[[package]]
+name = "cognix_knowledge_graph"
+version = "0.1.0"
+
+[[package]]
+name = "cognix_policy"
+version = "0.1.0"
+
+[[package]]
+name = "cognix_reflection"
+version = "0.1.0"
+
+[[package]]
+name = "cognix_runtime"
+version = "0.1.0"
+dependencies = [
+ "cognix_agent_runtime",
+ "cognix_context",
+ "cognix_kernel",
+ "cognix_policy",
+ "cognix_reflection",
+ "cognix_workflow",
+]
+
+[[package]]
+name = "cognix_workflow"
+version = "0.1.0"
+dependencies = [
+ "cognix_agent_runtime",
+]
+
+[[package]]
 name = "collection_literals"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -14182,6 +14232,13 @@ dependencies = [
  "chrono",
  "clap",
  "cocoa 0.26.0",
+ "cognix_agent_runtime",
+ "cognix_context",
+ "cognix_kernel",
+ "cognix_policy",
+ "cognix_reflection",
+ "cognix_runtime",
+ "cognix_workflow",
  "comfy-table",
  "command",
  "command-corrections",

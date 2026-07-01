@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+DEFAULT_BASES = ["origin/refactor", "origin/main", "refactor", "main"]
+
+
+def run(cmd, **kwargs):
+    return subprocess.run(cmd, check=True, text=True, capture_output=kwargs.pop("capture_output", False), **kwargs)
+
+
+def cargo_metadata():
+    result = run(["cargo", "metadata", "--format-version=1", "--no-deps"], capture_output=True)
+    return json.loads(result.stdout)
+
+
+def find_base_ref():
+    for candidate in DEFAULT_BASES:
+        try:
+            run(["git", "rev-parse", "--verify", candidate], capture_output=True)
+            return candidate
+        except subprocess.CalledProcessError:
+            continue
+    return "HEAD^"
+
+
+def workspace_packages(metadata):
+    packages = {}
+    for pkg in metadata["packages"]:
+        packages[pkg["id"]] = {
+            "name": pkg["name"],
+            "manifest_path": pathlib.Path(pkg["manifest_path"]).resolve(),
+            "manifest_dir": pathlib.Path(pkg["manifest_path"]).resolve().parent,
+        }
+    return packages
+
+
+def build_reverse_dependency_map(metadata, workspace_ids):
+    reverse = {pkg_id: set() for pkg_id in workspace_ids}
+    for node in metadata.get("resolve", {}).get("nodes", []):
+        pkg_id = node["id"]
+        if pkg_id not in workspace_ids:
+            continue
+        for dep in node.get("deps", []):
+            dep_id = dep["pkg"]
+            if dep_id in workspace_ids:
+                reverse[dep_id].add(pkg_id)
+    return reverse
+
+
+def changed_files(base_ref):
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "--diff-filter=ACMRTUX", f"{base_ref}..HEAD"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def package_for_path(path, packages):
+    path = pathlib.Path(path).resolve()
+    for pkg_id, pkg in packages.items():
+        if pkg["manifest_dir"] in path.parents or pkg["manifest_dir"] == path.parent:
+            return pkg_id
+    return None
+
+
+def transitive_dependents(changed, reverse_map):
+    affected = set(changed)
+    queue = list(changed)
+    while queue:
+        current = queue.pop()
+        for dependent in reverse_map.get(current, []):
+            if dependent not in affected:
+                affected.add(dependent)
+                queue.append(dependent)
+    return affected
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Build only workspace crates affected by recent changes.")
+    parser.add_argument("--base", help="Git base ref to compare against.")
+    parser.add_argument("--check", action="store_true", help="Run cargo check instead of cargo build.")
+    args = parser.parse_args()
+
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    os.chdir(repo_root)
+    metadata = cargo_metadata()
+    packages = workspace_packages(metadata)
+    workspace_ids = set(packages.keys())
+    reverse_map = build_reverse_dependency_map(metadata, workspace_ids)
+
+    base = args.base or find_base_ref()
+    files = changed_files(base)
+    if not files:
+        print(f"No changed files found relative to {base}. Falling back to full workspace build.")
+        targets = []
+    else:
+        print(f"Changed files relative to {base}:")
+        for f in files:
+            print(f"  - {f}")
+
+        changed_packages = set()
+        for f in files:
+            if os.path.basename(f) in {"Cargo.toml", "Cargo.lock"}:
+                changed_packages = set()
+                break
+            pkg_id = package_for_path(f, packages)
+            if pkg_id is not None:
+                changed_packages.add(pkg_id)
+            else:
+                changed_packages = set()
+                break
+
+        if not changed_packages:
+            print("Unable to map all changes to workspace crates; running full workspace build.")
+            targets = []
+        else:
+            affected = transitive_dependents(changed_packages, reverse_map)
+            targets = sorted({packages[pkg_id]["name"] for pkg_id in affected})
+            print("Affected workspace crates:")
+            for name in targets:
+                print(f"  - {name}")
+
+    if targets:
+        command = ["cargo", "check" if args.check else "build", "--all-targets", "--all-features"]
+        for package in targets:
+            command.extend(["-p", package])
+    else:
+        command = ["cargo", "check" if args.check else "build", "--workspace", "--all-targets", "--all-features"]
+
+    print("\nRunning:", " ".join(command))
+    return subprocess.call(command)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

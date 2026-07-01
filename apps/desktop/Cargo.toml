@@ -80,6 +80,13 @@ command = { workspace = true }
 command-corrections.workspace = true
 command-signatures-v2 = { workspace = true, optional = true }
 computer_use.workspace = true
+cognix_agent_runtime.workspace = true
+cognix_context.workspace = true
+cognix_kernel.workspace = true
+cognix_policy.workspace = true
+cognix_reflection.workspace = true
+cognix_runtime.workspace = true
+cognix_workflow.workspace = true
 crc.workspace = true
 content_inspector = "0.2.4"
 concat-idents.workspace = true
