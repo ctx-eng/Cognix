@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+if ! command -v cargo-watch >/dev/null 2>&1; then
+    echo "Error: cargo-watch is required for cognix-buildd. Install it with 'cargo install cargo-watch'." >&2
+    exit 1
+fi
+
+PREBUILD=1
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --no-prebuild)
+            PREBUILD=0
+            shift
+            ;;
+        --once)
+            shift
+            exec ./script/affected-build
+            ;;
+        --help|-h)
+            cat <<'EOF'
+Usage: ./script/cognix-buildd [--no-prebuild] [--once]
+
+Starts a local background build daemon for the Cognix workspace.
+
+Options:
+  --no-prebuild   Skip the initial workspace prebuild.
+  --once          Run a single affected build and exit.
+  --help          Show this message.
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [[ "$PREBUILD" -eq 1 ]]; then
+    echo "Running initial prebuild with sccache..."
+    ./script/with-sccache build --workspace --all-targets --all-features
+fi
+
+echo "Starting cognix-buildd file watcher..."
+exec cargo watch -q -w Cargo.toml -w crates -w core -w ui -w apps -s './script/affected-build'

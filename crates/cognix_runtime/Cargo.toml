@@ -1,0 +1,14 @@
+[package]
+name = "cognix_runtime"
+version = "0.1.0"
+edition = "2021"
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+cognix_kernel = { path = "../cognix_kernel" }
+cognix_context = { path = "../cognix_context" }
+cognix_agent_runtime = { path = "../cognix_agent_runtime" }
+cognix_workflow = { path = "../cognix_workflow" }
+cognix_policy = { path = "../cognix_policy" }
+cognix_reflection = { path = "../cognix_reflection" }

@@ -1,0 +1,35 @@
+name: Build Helper Validation
+
+on:
+  push:
+    branches: [refactor, main]
+  pull_request:
+    branches: [refactor, main]
+
+jobs:
+  validate:
+    name: Validate build helper scripts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Set up sccache
+        uses: mozilla/sccache-action@v0.0.7
+
+      - name: Run workspace analyzer
+        run: ./script/workspace-analyzer --strict
+
+      - name: Validate sccache wrapper with cargo check
+        run: ./script/with-sccache check --workspace --all-targets --all-features
+
+      - name: Validate affected-build logic
+        run: ./script/affected-build --check

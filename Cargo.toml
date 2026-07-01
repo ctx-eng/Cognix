@@ -34,6 +34,14 @@ publish = false
 ai = { path = "crates/ai" }
 app-installation-detection = { path = "crates/app-installation-detection" }
 asset_cache = { path = "crates/asset_cache" }
+
+cognix_agent_runtime = { path = "crates/cognix_agent_runtime" }
+cognix_context = { path = "crates/cognix_context" }
+cognix_kernel = { path = "crates/cognix_kernel" }
+cognix_policy = { path = "crates/cognix_policy" }
+cognix_reflection = { path = "crates/cognix_reflection" }
+cognix_runtime = { path = "crates/cognix_runtime" }
+cognix_workflow = { path = "crates/cognix_workflow" }
 asset_macro = { path = "crates/asset_macro" }
 channel_versions = { path = "crates/channel_versions", default-features = false }
 command = { path = "crates/command" }

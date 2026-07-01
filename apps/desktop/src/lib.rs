@@ -91,6 +91,7 @@ mod view_components;
 mod vim_registers;
 mod voice;
 mod voltron;
+mod runtime_bootstrap;
 mod warp_managed_paths_watcher;
 #[cfg(target_family = "wasm")]
 mod wasm_nux_dialog;
@@ -179,6 +180,10 @@ pub use util::bindings::cmd_or_ctrl_shift;
 pub mod workflows;
 pub mod workspace;
 
+pub fn initialize_app_runtime() {
+    initialize_runtime();
+}
+
 #[cfg(feature = "integration_tests")]
 pub use persistence::testing as sqlite_testing;
 
@@ -195,6 +200,7 @@ use workflows::manager::WorkflowManager;
 
 use crate::ai::ambient_agents::github_auth_notifier::GitHubAuthNotifier;
 use crate::ai::document::ai_document_model::AIDocumentModel;
+use crate::runtime_bootstrap::initialize_runtime;
 use crate::ai::facts::manager::AIFactManager;
 use crate::ai::llms::LLMPreferences;
 use crate::ai::mcp::MCPGalleryManager;

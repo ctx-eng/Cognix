@@ -1,0 +1,9 @@
+[package]
+name = "cognix_context"
+version = "0.1.0"
+edition = "2021"
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+cognix_kernel = { path = "../cognix_kernel" }

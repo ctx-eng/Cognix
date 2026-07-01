@@ -1,0 +1,35 @@
+Workspace Analyzer summary
+
+Quick facts:
+- workspace_members: 65
+- total packages reported by cargo metadata: 1344 (includes registry/git deps)
+
+High-level findings:
+- Many workspace layering violations: numerous `crates/*` packages (layer 0) depend on `core/*` (layer 1) and `ui/*` (layer 2).
+- Common offenders: `crates/ai`, `crates/integration`, `crates/asset_cache`, `crates/onboarding`, `crates/repo_metadata`, `crates/settings`, `crates/warp_editor`, `crates/vim`, and several `core/*` crates that depend on `ui/*`.
+- Expensive dependency warnings: frequent uses of `regex`, `serde_json`, `tokio`, `serde_yaml`, `image`, `reqwest`, proc-macro crates (`syn`, `quote`, `proc-macro2`), `wasm-bindgen`, `openssl`, and `git2` across workspace packages.
+
+Representative top layering violations (sample):
+- `crates/ai` -> `core/warp_core`, `core/warp_graphql`, `core/warp_terminal`, `core/warp_util`, `ui/warpui`, `ui/warpui_extras`
+- `crates/integration` -> `apps/desktop` (warp), `core/warp_cli`, `core/warp_core`, `ui/warpui`
+- `crates/asset_cache` -> `ui/warpui_core`
+- `crates/onboarding` -> `ui/ui_components`, `core/warp_core`, `core/warp_logging`, `ui/warpui`
+- `core/remote_server` -> `ui/warpui`
+- `crates/repo_metadata` -> `core/warp_core`, `core/warp_util`, `ui/warpui`
+
+Representative expensive-dep warnings (sample):
+- `regex` used widely (search/indexing, many crates)
+- `serde_json` used across many crates including core and UI
+- `tokio` used by networking/server-heavy crates
+- `image`, `reqwest`, `wasm-bindgen`, `proc-macro` toolchain crates
+
+Suggested next steps:
+1) Triage top violations: decide per crate whether dependency is legitimate or needs refactoring (e.g., move shared logic into lower-layer crate).
+2) Add explicit exceptions or update `LAYER_PREFIXES` if layers in this repo should map differently.
+3) For expensive deps, audit hot-path crates (e.g., `ai`, `warp_core`, `warpui_core`) and consider moving heavy runtime work behind feature flags or dedicated worker crates.
+4) Optional: create a small GH issue per top violation for follow-up and ownership.
+
+If you want I can:
+- produce a top-20 CSV of exact violations and their manifest paths,
+- create GH issues for the highest-impact violations,
+- or update the analyzer to emit a machine-readable JSON report.
