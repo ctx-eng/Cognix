@@ -14,7 +14,7 @@ Feature flags in Warp are compile-time flags that allow features to be selective
 ## Steps
 
 ### 1. Add to Cargo.toml
-Add the feature to `app/Cargo.toml` under the `[features]` section, but **NOT** under the `default` nested stanza:
+Add the feature to `apps/desktop/Cargo.toml` under the `[features]` section, but **NOT** under the `default` nested stanza:
 
 ```toml
 [features]
@@ -32,7 +32,7 @@ pub enum FeatureFlag {
 ```
 
 ### 3. Add conditional compilation directive
-Add the feature to `app/src/lib.rs` with a corresponding `#[cfg(feature = "...")]` attribute to ensure it's only included when enabled:
+Add the feature to `apps/desktop/src/lib.rs` with a corresponding `#[cfg(feature = "...")]` attribute to ensure it's only included when enabled:
 
 ```rust
 #[cfg(feature = "your_feature_name")]
@@ -84,7 +84,7 @@ EditableBinding::new(
 
 ## Rolling Out to Stable
 
-When ready to enable the feature for all Warp Stable users, add it to the `default` array in `app/Cargo.toml`:
+When ready to enable the feature for all Warp Stable users, add it to the `default` array in `apps/desktop/Cargo.toml`:
 
 ```toml
 [features]

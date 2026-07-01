@@ -1,6 +1,7 @@
 use core::fmt;
 use itertools::{Either, Itertools};
 use line_ending::LineEnding;
+use smol_str::SmolStr;
 use markdown_parser::{
     CodeBlockText, FormattedIndentTextInline, FormattedTable, FormattedTaskList, FormattedText,
     FormattedTextFragment, FormattedTextHeader, FormattedTextLine, FormattedTextStyles,
@@ -2329,7 +2330,7 @@ impl Buffer {
             let block_type = self.block_type_at_point(offset);
 
             match block_type {
-                BlockType::Text(BufferBlockStyle::Table { .. }) => {
+                BlockType::Text(BufferBlockStyle::Table(_)) => {
                     text.push_str(&self.clipboard_table_text_in_range(
                         block_start,
                         segment,
@@ -2378,7 +2379,7 @@ impl Buffer {
             return fallback_text();
         };
 
-        let BufferBlockStyle::Table { alignments, cache } = &table_block.style else {
+        let BufferBlockStyle::Table(table_style) = &table_block.style else {
             return fallback_text();
         };
 
@@ -2387,7 +2388,7 @@ impl Buffer {
             .iter()
             .map(|run| run.run.as_str())
             .collect::<String>();
-        let cached = cache.get_or_populate(&table_text, alignments);
+        let cached = table_style.cache.get_or_populate(&table_text, &table_style.alignments);
         let table = &cached.table;
         let cell_offset_maps = &cached.cell_offset_maps;
         let offset_map = &cached.offset_map;
@@ -2449,7 +2450,7 @@ impl Buffer {
 
             if matches!(
                 self.block_type_at_point(offset),
-                BlockType::Text(BufferBlockStyle::Table { .. })
+                BlockType::Text(BufferBlockStyle::Table(_))
             ) && (offset > block_start || segment_end < block_end)
             {
                 return true;
@@ -4985,12 +4986,14 @@ impl Buffer {
         // Placeholder is non-text; compute byte info before content modification.
         let byte_at = at.to_buffer_byte_offset(self);
 
+        let text: String = text.into();
+        let placeholder = SmolStr::from(text);
         self.content = {
             let cursor = self.content.cursor::<CharOffset, ()>();
             let mut buffer_cursor = BufferCursor::new(cursor);
             let mut new_content = buffer_cursor.slice_to_offset_before_markers(at);
             new_content.push(BufferText::Placeholder {
-                content: text.into(),
+                content: placeholder,
             });
             new_content.push_tree(buffer_cursor.suffix());
             new_content
@@ -5837,7 +5840,7 @@ impl Iterator for StyledBufferBlocks<'_> {
                     let text = active_text!(self);
                     self.cursor.next();
                     text.runs.push(StyledBufferRun {
-                        run: content.clone(),
+                        run: content.to_string(),
                         text_styles: text.current_text_styles.clone().for_placeholder(),
                         block_style: text.block_style.clone(),
                     });
@@ -6018,7 +6021,7 @@ fn convert_text_with_style_to_formatted_text(
                 code: text.to_string(),
             })]
         }
-        BufferBlockStyle::Table { .. } => vec![FormattedTextLine::Table(
+        BufferBlockStyle::Table(_) => vec![FormattedTextLine::Table(
             FormattedTable::from_internal_format(text),
         )],
     })

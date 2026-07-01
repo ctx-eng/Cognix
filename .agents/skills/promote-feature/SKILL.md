@@ -11,7 +11,7 @@ Guides the staged promotion of a gated `FeatureFlag` variant to Dogfood, Preview
 
 Feature flags have two interacting layers:
 - **Runtime** (`warp_core/src/features.rs`): `DOGFOOD_FLAGS`, `PREVIEW_FLAGS`, `RELEASE_FLAGS` — enabled per-channel at startup.
-- **Compile-time** (`app/Cargo.toml` + `app/src/lib.rs`): Cargo features in `[features]`. The `default = [...]` array enables a feature for all builds. `enabled_features()` in `app/src/lib.rs` bridges each Cargo feature to its `FeatureFlag` variant via `#[cfg(feature = "...")]`.
+- **Compile-time** (`apps/desktop/Cargo.toml` + `apps/desktop/src/lib.rs`): Cargo features in `[features]`. The `default = [...]` array enables a feature for all builds. `enabled_features()` in `apps/desktop/src/lib.rs` bridges each Cargo feature to its `FeatureFlag` variant via `#[cfg(feature = "...")]`.
 
 **Do not remove the flag immediately after promoting to Stable.** Keep it for at least 1–2 release cycles so a rollback is a one-line PR (remove the entry from `default`). Use the `remove-feature-flag` skill for the cleanup step later.
 
@@ -44,7 +44,7 @@ pub const PREVIEW_FLAGS: &[FeatureFlag] = &[
 
 This requires changes in **three files**.
 
-### 1. `app/Cargo.toml` — add to `default`
+### 1. `apps/desktop/Cargo.toml` — add to `default`
 
 Add the snake_case feature name to the `default = [...]` array:
 
@@ -57,7 +57,7 @@ default = [
 
 Prefer this over adding to `RELEASE_FLAGS` (see comment at `warp_core/src/features.rs:787-790`). It compiles the feature into all builds and enables a one-line rollback.
 
-### 2. `app/src/lib.rs` — add to `enabled_features()` bridge
+### 2. `apps/desktop/src/lib.rs` — add to `enabled_features()` bridge
 
 Add a `#[cfg(...)]` entry inside the `flags.extend([...])` block in `enabled_features()`, following the existing pattern:
 

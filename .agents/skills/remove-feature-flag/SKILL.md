@@ -14,14 +14,14 @@ After a feature flag has been enabled for all users and has stabilized in produc
 ## When to Remove
 
 Remove a feature flag when:
-- The feature has been enabled in `default` features in `app/Cargo.toml`
+- The feature has been enabled in `default` features in `apps/desktop/Cargo.toml`
 - The feature has been stable in production for a reasonable period
 - There are no plans to disable the feature or provide configuration options
 - The team agrees the feature is permanent
 
 ## Steps
 
-### 1. Remove from app/Cargo.toml
+### 1. Remove from apps/desktop/Cargo.toml
 Remove the feature from both the `[features]` section and the `default` array:
 
 ```toml
@@ -44,7 +44,7 @@ pub enum FeatureFlag {
 }
 ```
 
-### 3. Remove from app/src/lib.rs
+### 3. Remove from apps/desktop/src/lib.rs
 Remove the conditional compilation directive:
 
 ```rust
@@ -138,11 +138,11 @@ cargo run
 
 ```bash
 # Find all occurrences of the flag name
-rg "YourFeatureName" app/ warp_core/
+rg "YourFeatureName" apps/desktop/ core/warp_core/
 
 # Find feature flag checks
-rg "FeatureFlag::YourFeatureName" app/
+rg "FeatureFlag::YourFeatureName" apps/desktop/
 
 # Find cfg attributes
-rg 'cfg\(feature = "your_feature_name"\)' app/
+rg 'cfg\(feature = "your_feature_name"\)' apps/desktop/
 ```

@@ -6,6 +6,8 @@ publish.workspace = true
 license.workspace = true
 
 [features]
+default = ["ui"]
+ui = ["dep:settings", "dep:warpui", "dep:warpui_extras"]
 crash_reporting = ["dep:sentry", "dep:sentry-log"]
 integration_tests = []
 local_fs = []
@@ -13,6 +15,7 @@ release_bundle = []
 test-util = ["dep:mockito", "warp_features/test-util"]
 
 [dependencies]
+warp_core_base.workspace = true
 anyhow.workspace = true
 cfg-if.workspace = true
 command-corrections.workspace = true
@@ -30,7 +33,7 @@ log.workspace = true
 parking_lot.workspace = true
 reqwest.workspace = true
 serde.workspace = true
-settings.workspace = true
+settings = { workspace = true, optional = true }
 serde_json.workspace = true
 serde_with.workspace = true
 sentry = { workspace = true, optional = true }
@@ -48,8 +51,8 @@ settings_value = { workspace = true, features = ["derive"] }
 async-broadcast.workspace = true
 futures.workspace = true
 line-ending.workspace = true
-warpui.workspace = true
-warpui_extras = { workspace = true, features = ["default"] }
+warpui = { workspace = true, optional = true }
+warpui_extras = { workspace = true, features = ["default"], optional = true }
 mockito = { workspace = true, optional = true }
 asset_macro.workspace = true
 string-offset.workspace = true

@@ -1,6 +1,6 @@
 //! Best-effort secret redaction for telemetry payloads.
 //!
-//! Unlike the AI-side secret redaction in `app/src/ai/blocklist/block/secret_redaction.rs`,
+//! Unlike the AI-side secret redaction in `apps/desktop/src/ai/blocklist/block/secret_redaction.rs`,
 //! which is gated on the user's secret-redaction (a.k.a. "safe mode") setting and is used
 //! for visual obfuscation in the terminal, the redaction in this module is unconditional:
 //! we always do a redaction pass on telemetry payloads that may contain user-generated

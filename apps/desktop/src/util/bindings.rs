@@ -240,7 +240,7 @@ pub fn trigger_to_keystroke(trigger: &Trigger) -> Option<Keystroke> {
     match trigger {
         Trigger::Keystrokes(keys) => keys.first().cloned(),
         // Custom actions don't have keyboard shortcuts associated with the actions themselves,
-        // they are set separately in app/src/lib.rs as part of creating the Menu. As a result,
+        // they are set separately in apps/desktop/src/lib.rs as part of creating the Menu. As a result,
         // we need to map those to the appropriate keyboard shortcut.
         Trigger::Custom(custom) => custom_tag_to_keystroke(*custom),
         // Similarly, Standard Actions have their keyboard shortcuts set when creating the menu

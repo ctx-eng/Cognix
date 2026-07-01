@@ -20,7 +20,7 @@ Adding telemetry code is straightforward, but designing meaningful instrumentati
 
 ### 1. Identify or create a telemetry module
 
-Find an existing feature-specific telemetry file (e.g., `app/src/antivirus/telemetry.rs`) or create a new one for your feature area.
+Find an existing feature-specific telemetry file (e.g., `apps/desktop/src/antivirus/telemetry.rs`) or create a new one for your feature area.
 
 ### 2. Define the telemetry event enum
 
@@ -164,4 +164,4 @@ cargo run --features log_named_telemetry_events
 
 ## Example Reference
 
-See `app/src/antivirus/telemetry.rs` for a complete example of a feature-specific telemetry implementation.
+See `apps/desktop/src/antivirus/telemetry.rs` for a complete example of a feature-specific telemetry implementation.

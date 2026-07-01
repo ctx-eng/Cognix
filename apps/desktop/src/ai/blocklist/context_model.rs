@@ -888,7 +888,7 @@ impl BlocklistAIContextModel {
     /// text, or `None` if there is no selected conversation to display (either because no
     /// conversation is selected, or because the selected conversation is empty/passive/untitled
     /// and should be treated as a "new" conversation). Mirrors the `agent_indicator` pattern in
-    /// `app/src/tab.rs`.
+    /// `apps/desktop/src/tab.rs`.
     pub fn selected_conversation_status_for_hint(
         &self,
         app: &AppContext,

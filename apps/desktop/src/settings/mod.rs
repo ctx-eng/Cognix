@@ -246,7 +246,7 @@ impl ExtraMetaKeys {
 /// DO NOT ADD ANYTHING NEW HERE!
 ///
 /// This struct is deprecated; all new settings should make use of the
-/// macros in app/src/settings/macros.rs.
+/// macros in apps/desktop/src/settings/macros.rs.
 #[derive(Clone, Debug)]
 pub struct Settings;
 

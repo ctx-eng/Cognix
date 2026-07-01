@@ -869,7 +869,7 @@ fn layout_text_block(
     }
 
     // Short-circuit before paragraph accumulation for table blocks.
-    if matches!(text_block.style, BufferBlockStyle::Table { .. })
+    if matches!(text_block.style, BufferBlockStyle::Table(_))
         && FeatureFlag::MarkdownTables.is_enabled()
     {
         let spacing = layout
@@ -899,7 +899,7 @@ fn layout_text_block(
     for run in &text_block.block {
         let new_line = active_line.layout_run(layout, run, &paragraph_styles);
 
-        if new_line && !matches!(text_block.style, BufferBlockStyle::Table { .. }) {
+        if new_line && !matches!(text_block.style, BufferBlockStyle::Table(_)) {
             let offsets = active_line.finish_offsets();
             paragraphs.push(Paragraph::new(
                 layout.layout_text(
@@ -1032,7 +1032,7 @@ fn layout_text_block(
                 .map(BlockItem::Paragraph)
                 .ok_or_else(|| anyhow!("Plain text item should have one paragraph"))
         }
-        BufferBlockStyle::Table { .. } => paragraphs
+        BufferBlockStyle::Table(_) => paragraphs
             .pop()
             .map(BlockItem::Paragraph)
             .ok_or_else(|| anyhow!("Table fallback should have at least one paragraph")),
@@ -1086,8 +1086,8 @@ fn layout_table_block(
         .map(|run| run.run.as_str())
         .collect::<String>();
     let style_cache = match &text_block.style {
-        BufferBlockStyle::Table { alignments, cache } => {
-            Some(cache.get_or_populate(&table_plain_text, alignments))
+        BufferBlockStyle::Table(table_style) => {
+            Some(table_style.cache.get_or_populate(&table_plain_text, &table_style.alignments))
         }
         _ => None,
     };

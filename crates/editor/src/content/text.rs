@@ -20,6 +20,7 @@ pub use markdown_parser::{
 use pathfinder_color::ColorU;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use smol_str::SmolStr;
 use std::{
     borrow::Cow,
     collections::HashSet,
@@ -569,7 +570,7 @@ pub enum BufferText {
     },
     /// Ghosted text, such as an autosuggestion or zero-state placeholder for a newly-inserted block.
     Placeholder {
-        content: String,
+        content: SmolStr,
     },
 }
 
@@ -654,7 +655,7 @@ impl Display for BufferText {
                             write!(f, "@{number}")?;
                         }
                     }
-                    BufferBlockStyle::Table { .. } => f.write_str("table")?,
+                    BufferBlockStyle::Table(_) => f.write_str("table")?,
                 };
                 f.write_str(">")
             }
@@ -866,6 +867,18 @@ impl CodeBlockType {
     }
 }
 
+/// Boxed representation of the Table variant to keep [`BufferBlockStyle`] small (16 bytes).
+/// The Table variant is the largest; boxing it reduces the enum size from ~48 bytes to ~16 bytes,
+/// improving SumTree traversal, clone performance, and cache locality.
+#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+pub struct TableBlockStyle {
+    pub alignments: Vec<FormattedTableAlignment>,
+    /// Lazy cache of the parsed table, per-cell offset maps, and linear offset map for this
+    /// block. Does not participate in equality or hashing.
+    #[allow(dead_code)]
+    pub cache: TableCache,
+}
+
 #[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub enum BufferBlockStyle {
     CodeBlock {
@@ -886,22 +899,16 @@ pub enum BufferBlockStyle {
         number: Option<usize>,
         indent_level: ListIndentLevel,
     },
-    Table {
-        alignments: Vec<FormattedTableAlignment>,
-        /// Lazy cache of the parsed table, per-cell offset maps, and linear offset map for this
-        /// block. Does not participate in equality or hashing.
-        #[allow(dead_code)]
-        cache: TableCache,
-    },
+    Table(Box<TableBlockStyle>),
 }
 
 impl BufferBlockStyle {
     /// Construct a new `Table` block style with an empty cache.
     pub fn table(alignments: Vec<FormattedTableAlignment>) -> Self {
-        Self::Table {
+        Self::Table(Box::new(TableBlockStyle {
             alignments,
             cache: TableCache::default(),
-        }
+        }))
     }
 
     pub(super) fn line_break_behavior(&self) -> BlockLineBreakBehavior {
@@ -935,12 +942,12 @@ impl BufferBlockStyle {
     pub(super) fn should_inherit_style(
         &self,
         edit_cursor: CursorType,
-        previous_block_style: BufferBlockStyle,
+        previous_block_style: &BufferBlockStyle,
     ) -> bool {
         match self {
             // For plain text and runnable code blocks, always inherit the previous block's styling if
             // the cursor is not at buffer start.
-            Self::PlainText | Self::CodeBlock { .. } | Self::Table { .. } => {
+            Self::PlainText | Self::CodeBlock { .. } | Self::Table(_) => {
                 edit_cursor != CursorType::BufferStart
             }
             // For other non-plain text blocks, inherit the previous block's styling if
@@ -950,7 +957,7 @@ impl BufferBlockStyle {
             | Self::OrderedList { .. }
             | Self::UnorderedList { .. }
             | Self::TaskList { .. } => {
-                previous_block_style != *self
+                previous_block_style != self
                     && (edit_cursor == CursorType::Inline
                         || (edit_cursor == CursorType::NewLineStart
                             && matches!(previous_block_style, BufferBlockStyle::CodeBlock { .. })))

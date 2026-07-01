@@ -10,13 +10,13 @@
     // ── Data / Config formats ───────────────────────────────────────────────
     // TOML support with schema validation (Cargo.toml, rust-toolchain.toml…).
     "tamasfe.even-better-toml",
-    // GraphQL schema and query highlighting (crates/graphql, crates/warp_graphql_schema).
+    // GraphQL schema and query highlighting (crates/graphql, core/warp_graphql_schema).
     "GraphQL.vscode-graphql",
     "GraphQL.vscode-graphql-syntax",
     // ── Other languages ─────────────────────────────────────────────────────
     // PowerShell support (the repo ships .ps1 scripts and a PSScriptAnalyzer config).
     "ms-vscode.PowerShell",
-    // C/C++ support for the Objective-C / C++ sources under app/src/.
+    // C/C++ support for the Objective-C / C++ sources under apps/desktop/src/.
     "ms-vscode.cpptools",
     // ── Workspace hygiene ───────────────────────────────────────────────────
     // Honour the project's .editorconfig (final newlines, trim whitespace, etc.).

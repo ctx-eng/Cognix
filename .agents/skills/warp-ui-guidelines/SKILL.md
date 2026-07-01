@@ -19,7 +19,7 @@ New guidelines get added here over time. If you discover a recurring UI mistake 
 
 ## Guideline: Reuse button themes
 
-Button colors come from a shared set of `ActionButtonTheme` impls in `app/src/view_components/action_button.rs` (and the parallel `Theme` impls in `crates/ui_components/src/button/themes.rs`) — `PrimaryTheme`, `SecondaryTheme`, `NakedTheme`, `DangerPrimaryTheme`, etc. These encode the design system and keep button colors consistent across the app.
+Button colors come from a shared set of `ActionButtonTheme` impls in `apps/desktop/src/view_components/action_button.rs` (and the parallel `Theme` impls in `crates/ui_components/src/button/themes.rs`) — `PrimaryTheme`, `SecondaryTheme`, `NakedTheme`, `DangerPrimaryTheme`, etc. These encode the design system and keep button colors consistent across the app.
 
 When styling a button, **use one of the existing themes unchanged**. The shared themes are well-established and vetted; if one looks "wrong" for your use case, the most likely explanation is that you're reaching for the wrong theme, not that the theme is buggy.
 

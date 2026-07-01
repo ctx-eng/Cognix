@@ -8224,7 +8224,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "tar",
- "warp_core",
+ "warp_core_base",
  "zip 2.4.2",
 ]
 
@@ -14478,7 +14478,7 @@ dependencies = [
  "serial_test",
  "url",
  "uuid",
- "warp_core",
+ "warp_core_base",
  "warp_util",
  "windows 0.62.2",
 ]
@@ -14570,9 +14570,42 @@ dependencies = [
  "thiserror 2.0.17",
  "tokio",
  "url",
+ "warp_core_base",
  "warp_features",
  "warpui",
  "warpui_extras",
+ "websocket",
+]
+
+[[package]]
+name = "warp_core_base"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "cocoa 0.26.0",
+ "command-corrections",
+ "directories",
+ "dirs 6.0.0",
+ "enum-iterator",
+ "http 1.1.0",
+ "inventory",
+ "itertools 0.14.0",
+ "lazy_static",
+ "line-ending",
+ "log",
+ "mockito",
+ "objc",
+ "objc2-foundation 0.3.2",
+ "parking_lot",
+ "reqwest",
+ "sentry",
+ "sentry-log",
+ "serde",
+ "tempfile",
+ "tokio",
+ "url",
+ "warp_features",
  "websocket",
 ]
 
@@ -14614,6 +14647,7 @@ dependencies = [
  "rust-embed 8.7.2",
  "serde",
  "serde_yaml",
+ "smol_str",
  "string-offset",
  "sum_tree",
  "thiserror 2.0.17",
@@ -14699,7 +14733,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.17",
- "warp_core",
+ "warp_core_base",
 ]
 
 [[package]]
@@ -14729,7 +14763,7 @@ dependencies = [
  "log-panics",
  "sentry",
  "sentry-log",
- "warp_core",
+ "warp_core_base",
  "warp_web_event_bus",
  "wasm-bindgen",
  "web-sys",

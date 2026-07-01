@@ -429,13 +429,16 @@ fn app_id_from_bundle() -> Option<AppId> {
             foundation::NSBundle,
         };
         use objc::{msg_send, sel, sel_impl};
-        use warpui::platform::mac::utils::nsstring_as_str;
+        use std::slice;
 
         let bundle = id::mainBundle();
         if bundle != nil {
             let nsstring: id = msg_send![bundle, bundleIdentifier];
             if nsstring != nil {
-                let app_id = nsstring_as_str(nsstring)
+                const UTF8_ENCODING: usize = 4;
+                let cstr: *const i8 = msg_send![nsstring, UTF8String];
+                let len: usize = msg_send![nsstring, lengthOfBytesUsingEncoding: UTF8_ENCODING];
+                let app_id = std::str::from_utf8(slice::from_raw_parts(cstr as *const u8, len))
                     .expect("bundle IDs should always be valid UTF-8 strings");
 
                 if !app_id.is_empty() {

@@ -527,7 +527,7 @@ jobs:
           if [[ ! -d $(brew --prefix clang-format) ]]; then
             brew install clang-format
           fi
-          ./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./crates/warpui/src/ ./app/src/
+          ./script/run-clang-format.py -r --extensions 'c,h,cpp,m' ./ui/warpui/src/ ./apps/desktop/src/
 
   general-lint:
     name: Miscellaneous checks
